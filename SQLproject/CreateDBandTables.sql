@@ -1,11 +1,11 @@
---IF EXISTS(select * from sys.databases where name='SQLSaturday')
---DROP DATABASE SQLSaturday
---GO
---CREATE DATABASE SQLSaturday
---GO
---USE SQLSaturday
---GO
-
+USE Blog
+GO
+IF EXISTS(select * from sys.databases where name='SQLSaturday')
+DROP DATABASE SQLSaturday
+GO
+CREATE DATABASE SQLSaturday
+GO
+USE SQLSaturday
 
 
 --13 states have zipcodes that cross state lines and hundreds of cities share zip. No combination of city, state, zip are transitive
@@ -117,10 +117,11 @@ CREATE TABLE Venue
 -- capacities cannot be exceeded, put in stored procedure 
 CREATE TABLE Room
 (
+    RoomID int NOT NULL IDENTITY PRIMARY KEY,
 	RoomNumber int NOT NULL, 
 	VenueID int NOT NULL,
 	Capacity int NOT NULL,
-	PRIMARY KEY (RoomNumber, VenueID)
+	
 );
 
 CREATE TABLE Lecture
@@ -180,7 +181,7 @@ CREATE TABLE Schedule
 (
 	EventID int NOT NULL,
 	LectureID int NOT NULL,
-	RoomNumber int NOT NULL,
+	RoomID int NOT NULL,
 	LectureStart DATETIME NOT NULL,
-	PRIMARY KEY (EventID, RoomNumber, LectureStart)  --this is automaticcally no go for repeat but duration checks need to be in the stored procedure
+	PRIMARY KEY (EventID, RoomID, LectureStart)  --this is automaticcally no go for repeat but duration checks need to be in the stored procedure
 );
