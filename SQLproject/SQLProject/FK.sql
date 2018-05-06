@@ -1,4 +1,6 @@
-Use SqlSaturday
+ Use SqlSaturday
+GO
+--for purposes of this assignment I will allow automatic creation of fk names. I can see them in O.E. or diagram if needed
 ALTER TABLE Grade
 ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
 
@@ -32,9 +34,6 @@ ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
 ALTER TABLE Participant
 ADD FOREIGN KEY (AddressID) REFERENCES AddressTable(AddressID); 
 
-ALTER TABLE Participant
-ADD FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID); 
-
 ALTER TABLE Room
 ADD FOREIGN KEY (VenueID) REFERENCES Venue(VenueID); 
 
@@ -67,6 +66,12 @@ ADD FOREIGN KEY (AddressID) REFERENCES AddressTable(AddressID);
 
 ALTER TABLE VendorEvent
 ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
+
+ALTER TABLE VendorParticipant
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
+
+ALTER TABLE VendorParticipant
+ADD FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID);
 
 ALTER TABLE Volunteer
 ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
