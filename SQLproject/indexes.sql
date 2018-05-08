@@ -1,0 +1,2 @@
+--unlike PK constraints, when a fk constraint is defined, an index is not created by default.
+--we need to index those for performance enhancement on joins involving pk and fk 

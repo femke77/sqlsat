@@ -57,7 +57,9 @@ CREATE TABLE VendorParticipant
 );
 
 --link vendors, events and tables, if tablenum is null, vendor is only a sponsor 
---stored procedure checks eventid and tablenumber and limits to 10 tables per eventid 
+--stored procedure checks eventid and tablenumber and limits to 10 tables per eventid, which, by looking at sponsers.xls
+--seems to be a new rule, as 
+--tablenumber IS dependent on vendor as well as event. empty tables are useless at an event
 CREATE TABLE VendorEvent
 (
 	VendorID int NOT NULL,
@@ -66,6 +68,11 @@ CREATE TABLE VendorEvent
 	PRIMARY KEY (VendorID, EventID)  
 );
 
+CREATE TABLE VendorTable
+(
+      TableID int NOT NULL PRIMARY KEY
+
+);
 
 CREATE TABLE Volunteer
 (
@@ -197,6 +204,7 @@ CREATE TABLE Schedule
 );
 
 --for purposes of this assignment I will allow automatic creation of fk names. I can see them in O.E. or diagram if needed
+--do we need any cascades? 
 ALTER TABLE Grade
 ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
 
