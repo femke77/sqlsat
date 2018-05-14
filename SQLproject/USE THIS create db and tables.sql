@@ -7,6 +7,7 @@ CREATE DATABASE SQLSaturday
 GO
 USE SQLSaturday
 
+---------------------------------CREATE TABLES
 
 --13 states have zipcodes that cross state lines and hundreds of cities share zip. No combination of city, state, zip are transitive
 --dependendies. 
@@ -15,13 +16,14 @@ CREATE TABLE AddressTable
 	AddressID int IDENTITY NOT NULL PRIMARY KEY,
 	AddressLine varchar (255) NOT NULL,
 	City varchar(255) NOT NULL,
-	St varchar(4) NOT NULL,
+	St varchar(50) NOT NULL,
 	Zip varchar(10) NOT NULL
 
 );
 
 --email is not considered unique in all cases e.g. "customer_service@company.com" 
 --phone is not unique e.g. 1-800 numbers or companies that use extensions based off a main line
+--phone ext can be put under phone att.  20 is enough for this too 
 --Every participant can belong to 1 or more categories e.g. a lecturer may also be a student. 
 CREATE TABLE Participant
 (
@@ -30,14 +32,12 @@ CREATE TABLE Participant
 	FirstName varchar(255) NOT NULL,
 	AddressID int  NOT NULL,
 	Email varchar(255) NOT NULL,
-	Phone varchar(15) NOT NULL,
-	PhoneExt varchar(6) NOT NULL,
+	Phone varchar(20) NOT NULL,
 	EmployerName varchar(255) NULL   
-	--RaffleParticipant tinyint NULL,     this should best go with student
-	--VendorID int NULL	              realization that there might be many nulls here so split it out to table
+
 );
 
---vendor is a business, participants can be associated with a vendor or not, these attributes are not the same as personal attributes ( more data!)
+--vendor is a business
 --any vendor can participate in raffle whether they have a local table or not. All of them will want email addresses
 CREATE TABLE Vendor
 (
@@ -49,7 +49,7 @@ CREATE TABLE Vendor
 	RaffleParticipant tinyint NOT NULL
 );
 
---vendors may send several people to the event, so we don't want vendor info repeated for each person
+--participants associated with vendors
 CREATE TABLE VendorParticipant
 (
    ParticipantID int NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE VendorParticipant
 );
 
 --link vendors, events and tables, if tablenum is null, vendor is only a sponsor 
---stored procedure checks eventid and tablenumber and limits to 10 tables per eventid 
+--tablenumber IS dependent on vendor and event. empty tables are useless at an event
 CREATE TABLE VendorEvent
 (
 	VendorID int NOT NULL,
@@ -66,6 +66,7 @@ CREATE TABLE VendorEvent
 	TableNumber int NULL,  	
 	PRIMARY KEY (VendorID, EventID)  
 );
+
 
 
 CREATE TABLE Volunteer
@@ -92,6 +93,7 @@ CREATE TABLE Lecturer
 );
 
 --students are allowed to participate in raffles in exchange for allowing vendors to have their email addresses
+--they can opt out if they want
 CREATE TABLE Student
 (
 	ParticipantID int NOT NULL,
@@ -119,8 +121,7 @@ CREATE TABLE Venue
 	ContactLastName varchar(255) NOT NULL,
 	ContactFirstName varchar(255) NOT NULL,
 	Email varchar(255) NULL,
-	Phone varchar(15) NOT NULL,
-	Ext varchar (6) NULL
+	Phone varchar(20) NOT NULL,
 
 );
 
@@ -132,7 +133,7 @@ CREATE TABLE Room
 	RoomNumber int NOT NULL, 
 	VenueID int NOT NULL,
 	Capacity int NOT NULL,
-	CONSTRAINT uniqueroom UNIQUE (RoomNumber, VenueID)
+	CONSTRAINT unique_room UNIQUE (RoomNumber, VenueID)
 	
 );
 
@@ -150,8 +151,9 @@ CREATE TABLE Lecture
 -- advanced, intermediate, beginner, non-technical
 CREATE TABLE LectureLevel
 (
-	LectureID int NOT NULL PRIMARY KEY,
-	DifficultyLevel varchar(20)
+	LevelNum tinyint NOT NULL IDENTITY PRIMARY KEY,
+	DifficultyLevel varchar(20),
+	CONSTRAINT unique_difficulty UNIQUE (DifficultyLevel)
 );
 
 --a track is collection of classes with a cohesive theme
@@ -197,3 +199,132 @@ CREATE TABLE Schedule
 	LectureStart DATETIME NOT NULL,
 	PRIMARY KEY (EventID, RoomID, LectureStart)  --this is automatically no go for repeat but duration checks need to be in the stored procedure
 );
+
+----------------------------FOREIGN KEYS
+
+--for purposes of this assignment I will allow automatic creation of fk names. I can see them in O.E. or diagram if needed
+--do we need any cascades? 
+ALTER TABLE Grade
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
+
+ALTER TABLE Grade
+ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID); 
+
+ALTER TABLE Lecture
+ADD FOREIGN KEY (TrackID) REFERENCES Track(TrackID); 
+
+ALTER TABLE Lecture
+ADD FOREIGN KEY (LectureLevel) REFERENCES LectureLevel(LevelNum); 
+
+ALTER TABLE Lecturer
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
+
+ALTER TABLE Lecturer
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID); 
+
+ALTER TABLE LecturerLecture
+ADD FOREIGN KEY (LecturerID) REFERENCES Participant(ParticipantID); 
+
+ALTER TABLE LecturerLecture
+ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID); 
+
+ALTER TABLE Organizer
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
+
+ALTER TABLE Organizer
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID); 
+
+ALTER TABLE Participant
+ADD FOREIGN KEY (AddressID) REFERENCES AddressTable(AddressID); 
+
+ALTER TABLE Room
+ADD FOREIGN KEY (VenueID) REFERENCES Venue(VenueID); 
+
+ALTER TABLE Schedule
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID); 
+
+ALTER TABLE Schedule
+ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID); 
+
+ALTER TABLE Schedule
+ADD FOREIGN KEY (RoomID) REFERENCES Room(RoomID); 
+
+ALTER TABLE SqlSatEvent
+ADD FOREIGN KEY (VenueID) REFERENCES Venue(VenueID);
+
+ALTER TABLE Student
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
+
+ALTER TABLE Student
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
+
+ALTER TABLE StudentLecture
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
+
+ALTER TABLE StudentLecture
+ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID);
+
+ALTER TABLE Vendor
+ADD FOREIGN KEY (AddressID) REFERENCES AddressTable(AddressID);
+
+ALTER TABLE VendorEvent
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
+
+ALTER TABLE VendorParticipant
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
+
+ALTER TABLE VendorParticipant
+ADD FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID);
+
+ALTER TABLE Volunteer
+ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
+
+ALTER TABLE Volunteer
+ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
+
+------------------------------NONCLUSTERED INDEXES
+--Remainder of non-indexed foreign keys created with object explorer
+--see sql for discovering which keys those are
+
+CREATE NONCLUSTERED INDEX ix_schedule_lecture
+ON Schedule ([LectureID])
+
+CREATE NONCLUSTERED INDEX ix_lecture_track
+ON Lecture ([TrackID])
+
+CREATE NONCLUSTERED INDEX ix_lecture_level
+ON Lecture ([LectureLevel])
+
+CREATE NONCLUSTERED INDEX ix_partic_address
+ON Participant ([AddressID])
+
+CREATE NONCLUSTERED INDEX ix_vendor_address
+ON Vendor ([AddressID])
+-----------------------------UNIQUE INDEXES
+
+ALTER TABLE AddressTable
+ADD CONSTRAINT unique_address UNIQUE (AddressLine, City, St, Zip)
+
+ALTER TABLE Lecture
+ADD CONSTRAINT unique_lecture UNIQUE (LectureTitle)
+
+ALTER TABLE SqlSatEvent
+ADD CONSTRAINT unique_event UNIQUE (VenueID, EventDate)
+
+ALTER TABLE Track
+ADD CONSTRAINT unique_track UNIQUE (TrackTitle)
+
+ALTER TABLE Vendor
+ADD CONSTRAINT unique_vendor UNIQUE (CompanyName)
+
+ALTER TABLE Venue
+ADD CONSTRAINT unique_venue UNIQUE (VenueName)
+
+
+
+------------------------------OTHER
+
+INSERT INTO LectureLevel VALUES('Beginner')
+INSERT INTO LectureLevel VALUES('Intermediate')
+INSERT INTO LectureLevel VALUES('Advanced')
+INSERT INTO LectureLevel VALUES('Non-Technical')  

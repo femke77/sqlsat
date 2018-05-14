@@ -7,6 +7,7 @@ CREATE DATABASE SQLSaturday
 GO
 USE SQLSaturday
 
+---------------------------------CREATE TABLES
 
 --13 states have zipcodes that cross state lines and hundreds of cities share zip. No combination of city, state, zip are transitive
 --dependendies. 
@@ -15,7 +16,7 @@ CREATE TABLE AddressTable
 	AddressID int IDENTITY NOT NULL PRIMARY KEY,
 	AddressLine varchar (255) NOT NULL,
 	City varchar(255) NOT NULL,
-	St varchar(4) NOT NULL,
+	St varchar(50) NOT NULL,
 	Zip varchar(10) NOT NULL
 
 );
@@ -57,9 +58,7 @@ CREATE TABLE VendorParticipant
 );
 
 --link vendors, events and tables, if tablenum is null, vendor is only a sponsor 
---stored procedure checks eventid and tablenumber and limits to 10 tables per eventid, which, by looking at sponsers.xls
---seems to be a new rule, as 
---tablenumber IS dependent on vendor as well as event. empty tables are useless at an event
+--tablenumber IS dependent on vendor and event. empty tables are useless at an event
 CREATE TABLE VendorEvent
 (
 	VendorID int NOT NULL,
@@ -68,11 +67,7 @@ CREATE TABLE VendorEvent
 	PRIMARY KEY (VendorID, EventID)  
 );
 
-CREATE TABLE VendorTable
-(
-      TableID int NOT NULL PRIMARY KEY
 
-);
 
 CREATE TABLE Volunteer
 (
@@ -98,6 +93,7 @@ CREATE TABLE Lecturer
 );
 
 --students are allowed to participate in raffles in exchange for allowing vendors to have their email addresses
+--they can opt out if they want
 CREATE TABLE Student
 (
 	ParticipantID int NOT NULL,
@@ -137,7 +133,7 @@ CREATE TABLE Room
 	RoomNumber int NOT NULL, 
 	VenueID int NOT NULL,
 	Capacity int NOT NULL,
-	CONSTRAINT uniqueroom UNIQUE (RoomNumber, VenueID)
+	CONSTRAINT unique_room UNIQUE (RoomNumber, VenueID)
 	
 );
 
@@ -155,8 +151,9 @@ CREATE TABLE Lecture
 -- advanced, intermediate, beginner, non-technical
 CREATE TABLE LectureLevel
 (
-	LectureID int NOT NULL PRIMARY KEY,
-	DifficultyLevel varchar(20)
+	LevelNum tinyint NOT NULL IDENTITY PRIMARY KEY,
+	DifficultyLevel varchar(20),
+	CONSTRAINT unique_difficulty UNIQUE (DifficultyLevel)
 );
 
 --a track is collection of classes with a cohesive theme
@@ -203,6 +200,8 @@ CREATE TABLE Schedule
 	PRIMARY KEY (EventID, RoomID, LectureStart)  --this is automatically no go for repeat but duration checks need to be in the stored procedure
 );
 
+----------------------------FOREIGN KEYS
+
 --for purposes of this assignment I will allow automatic creation of fk names. I can see them in O.E. or diagram if needed
 --do we need any cascades? 
 ALTER TABLE Grade
@@ -214,8 +213,8 @@ ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID);
 ALTER TABLE Lecture
 ADD FOREIGN KEY (TrackID) REFERENCES Track(TrackID); 
 
-ALTER TABLE LectureLevel
-ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID); 
+ALTER TABLE Lecture
+ADD FOREIGN KEY (LectureLevel) REFERENCES LectureLevel(LevelNum); 
 
 ALTER TABLE Lecturer
 ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
@@ -283,3 +282,49 @@ ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
 ALTER TABLE Volunteer
 ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
 
+------------------------------NONCLUSTERED INDEXES
+--Remainder of non-indexed foreign keys created with object explorer
+--see sql for discovering which keys those are
+
+CREATE NONCLUSTERED INDEX ix_schedule_lecture
+ON Schedule ([LectureID])
+
+CREATE NONCLUSTERED INDEX ix_lecture_track
+ON Lecture ([TrackID])
+
+CREATE NONCLUSTERED INDEX ix_lecture_level
+ON Lecture ([LectureLevel])
+
+CREATE NONCLUSTERED INDEX ix_partic_address
+ON Participant ([AddressID])
+
+CREATE NONCLUSTERED INDEX ix_vendor_address
+ON Vendor ([AddressID])
+-----------------------------UNIQUE INDEXES
+
+ALTER TABLE AddressTable
+ADD CONSTRAINT unique_address UNIQUE (AddressLine, City, St, Zip)
+
+ALTER TABLE Lecture
+ADD CONSTRAINT unique_lecture UNIQUE (LectureTitle)
+
+ALTER TABLE SqlSatEvent
+ADD CONSTRAINT unique_event UNIQUE (VenueID, EventDate)
+
+ALTER TABLE Track
+ADD CONSTRAINT unique_track UNIQUE (TrackTitle)
+
+ALTER TABLE Vendor
+ADD CONSTRAINT unique_vendor UNIQUE (CompanyName)
+
+ALTER TABLE Venue
+ADD CONSTRAINT unique_venue UNIQUE (VenueName)
+
+
+
+------------------------------OTHER
+
+INSERT INTO LectureLevel VALUES('Beginner')
+INSERT INTO LectureLevel VALUES('Intermediate')
+INSERT INTO LectureLevel VALUES('Advanced')
+INSERT INTO LectureLevel VALUES('Non-Technical')  
