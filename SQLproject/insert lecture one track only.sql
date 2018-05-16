@@ -1,10 +1,11 @@
---assuming drop downs for track and difficulty when inserting
---particpant must be listed as a lecturer to use 
+--assuming drop downs for track and difficulty when inserting a lecture. organizers create tracks not lecturers so this will not add tracks
+--particpant must be listed as a lecturer to add a lecture or error raised
+--TODO have to add multiple tracks 
 
-USE SQLSaturday
+
 GO
-CREATE PROCEDURE addPresentation10 (@fname varchar(255), @lname varchar(255), @lectitle varchar(255), @lecdesc varchar(500),@diff tinyint, @dur smallint, 
-                                   @track int)
+CREATE PROCEDURE addPresentation (@fname varchar(255), @lname varchar(255), @lectitle varchar(255), @lecdesc varchar(500),@diff tinyint, @dur smallint, 
+                                   @track i)
 AS 
 BEGIN
 	SET NOCOUNT ON
@@ -17,8 +18,10 @@ BEGIN
 		DECLARE @lectureid int
 		SELECT @participantid =  ParticipantID from Participant where @fname = FirstName AND @lname = Participant.LastName
 		INSERT INTO Lecture VALUES (@lectitle, @diff, @lecdesc, @dur)		
+		--Get the lecture id just created and use it to link a lecturer and a lecture	
 		SELECT @lectureid = LectureID from Lecture where LectureTitle = @lectitle
 		INSERT INTO LecturerLecture VALUES (@participantid, @lectureid)
+		--Link the lecture and track
 		INSERT INTO LectureTrack VALUES (@track, @lectureid)
 	END
 	ELSE

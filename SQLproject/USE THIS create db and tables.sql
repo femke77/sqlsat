@@ -1,11 +1,5 @@
-USE Blog --release use of sqlsaturday
-GO
-IF EXISTS(select * from sys.databases where name='SQLSaturday')
-DROP DATABASE SQLSaturday
-GO
-CREATE DATABASE SQLSaturday
-GO
-USE SQLSaturday
+
+USE db
 
 ---------------------------------CREATE TABLES
 
@@ -144,7 +138,14 @@ CREATE TABLE Lecture
 	LectureLevel tinyint NOT NULL,
 	Descripton varchar(500) NULL,
 	MinutesDuration smallint NOT NULL DEFAULT '60',
-	TrackID int NOT NULL
+
+);
+
+CREATE TABLE LectureTrack
+(
+	TrackID int not null,
+	LectureID int not null,
+	PRIMARY KEY (TrackID, LectureID)
 
 );
 
@@ -196,7 +197,7 @@ CREATE TABLE Schedule
 	EventID int NOT NULL,
 	LectureID int NOT NULL,
 	RoomID int NOT NULL,
-	LectureStart DATETIME NOT NULL,
+	LectureStart TIME NOT NULL,
 	PRIMARY KEY (EventID, RoomID, LectureStart)  --this is automatically no go for repeat but duration checks need to be in the stored procedure
 );
 
@@ -204,14 +205,17 @@ CREATE TABLE Schedule
 
 --for purposes of this assignment I will allow automatic creation of fk names. I can see them in O.E. or diagram if needed
 --do we need any cascades? 
+ALTER TABLE LectureTrack
+ADD FOREIGN KEY (TrackID) REFERENCES Track(TrackID)
+
+ALTER TABLE LectureTrack
+ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID)
+
 ALTER TABLE Grade
 ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID); 
 
 ALTER TABLE Grade
 ADD FOREIGN KEY (LectureID) REFERENCES Lecture(LectureID); 
-
-ALTER TABLE Lecture
-ADD FOREIGN KEY (TrackID) REFERENCES Track(TrackID); 
 
 ALTER TABLE Lecture
 ADD FOREIGN KEY (LectureLevel) REFERENCES LectureLevel(LevelNum); 
@@ -282,15 +286,15 @@ ADD FOREIGN KEY (ParticipantID) REFERENCES Participant(ParticipantID);
 ALTER TABLE Volunteer
 ADD FOREIGN KEY (EventID) REFERENCES SqlSatEvent(EventID);
 
+ALTER TABLE Venue
+ADD FOREIGN KEY (VenueAddressID) REFERENCES AddressTable(AddressID)
+
 ------------------------------NONCLUSTERED INDEXES
 --Remainder of non-indexed foreign keys created with object explorer
 --see sql for discovering which keys those are
 
 CREATE NONCLUSTERED INDEX ix_schedule_lecture
 ON Schedule ([LectureID])
-
-CREATE NONCLUSTERED INDEX ix_lecture_track
-ON Lecture ([TrackID])
 
 CREATE NONCLUSTERED INDEX ix_lecture_level
 ON Lecture ([LectureLevel])
