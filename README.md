@@ -1,4 +1,7 @@
 # sqlsat
+grade: 96.7%
+Somelast minute minor changes were made directly to the database and are not reflected here. I found a redundancy and had to tweak some indexes. 
+ApexSql was used to fill in thousands of rows of test data, which is how I found the redundancy. 
 
 Specs:
 
