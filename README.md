@@ -1,11 +1,12 @@
 # sqlsat
-grade: 96.7%
-Somelast minute minor changes were made directly to the database and are not reflected here. I found a redundancy and had to tweak some indexes. 
+Grade: 96.7%
+Some last minute minor changes were made directly to the database and are not reflected here. I found a redundancy and had to tweak some indexes. 
+
 ApexSql was used to fill in thousands of rows of test data, which is how I found the redundancy. 
 
 Specs:
 
-Let's say, there is an event. This event is an educational event called  SQL Saturday. It is a database people meetup. It happens once a year at many given addresses/locations and driven by local user groups.
+"Let's say, there is an event. This event is an educational event called  SQL Saturday. It is a database people meetup. It happens once a year at many given addresses/locations and driven by local user groups.
 People who attend the meetup have different roles. Some are organizers, they keep track of submitted sessions, notify the presenters, and send all the info about meetup to “students” – who are in essence working professionals. They also solicit Sponsors/vendors.
  Presenters lecture. 
 Vendors present software solutions and services and participate in the gift raffle at the end of the event. 
@@ -26,4 +27,4 @@ Room fits up to a given number of people.
 There are different number of rooms per location.
 Vendors can sit tables, there are total 10 tables.
 Presenters can be vendors and organizers, and students can also be organizers and presenters of other sessions.
-Class lasts 60 minutes.
+Class lasts 60 minutes."
